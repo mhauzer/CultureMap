@@ -24,7 +24,7 @@ FROM
 GROUP BY
 	a.id, b.id
 ORDER BY
-	b."name", a.title
+	release_year, b."name", a.title
 """
 
   override def getList(rs: ResultSet): List[Album] =
