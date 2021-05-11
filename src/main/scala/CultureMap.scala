@@ -1,24 +1,30 @@
 import orm.Db
-import service.{AlbumService, PersonService, Service}
+import plist.PListParser
+import service.{AlbumService, PersonService}
 
 import scala.language.postfixOps
 
 object CultureMap extends App {
   private val BulletPoint = "* "
-
-  Db.setUrl(args(0))
-
   val personService = new PersonService()
   val albumService = new AlbumService()
 
-  try {
-    println(getStringAll("Kompozytorzy:", "person"))
-    println()
-    println(getStringAll("Albumy:", "album"))
-  } finally {
-    Db.connection.close()
-  }
+  if (args(0) == "-import") {
+    val filename = args(1)
+    println(s"Reading from $filename...")
+    val musicLibrary = new PListParser(filename).getMusicLibrary
+    println(musicLibrary.toString)
+  } else {
+    Db.setUrl(args(0))
 
+    try {
+      println(getStringAll("Kompozytorzy:", "person"))
+      println()
+      println(getStringAll("Albumy:", "album"))
+    } finally {
+      Db.connection.close()
+    }
+  }
   private def getStringAll(header: String, table: String) = {
     header + "\n" +
       "\n" +

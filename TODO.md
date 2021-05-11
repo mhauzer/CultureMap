@@ -1,0 +1,8 @@
+- album <- idea <- composer
+- maybe it is time to reintroduce the UDMS concept:
+  - document (idea):
+    - version
+        - incarnation
+            - location
+        - manifestation
+- web UI
