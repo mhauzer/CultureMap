@@ -1,5 +1,7 @@
 package plist
 
+import java.util.Date
+
 /*
   https://www.apple.com/DTDs/PropertyList-1.0.dtd
 
@@ -23,15 +25,16 @@ package plist
   <!ELEMENT real (#PCDATA)> <!-- Contents should represent a floating point number matching ("+" | "-")? d+ ("."d*)? ("E" ("+" | "-") d+)? where d is a digit 0-9.  -->
   <!ELEMENT integer (#PCDATA)> <!-- Contents should represent a (possibly signed) integer number in base 10 -->
  */
-case class AppleMusicLibrary(playlists: Array[Playlist],
+case class AppleMusicLibrary(libraryPersistentId: String,
+                             playlists: Array[Playlist],
                              musicFolder: String,
                              applicationVersion: String,
-                             date: String,
-                             libraryPersistentId: String,
+                             date: Date,
                              minorVersion: Int,
                              features: Int,
                              majorVersion: Int,
                              tracks: List[Track]) {
+
   override def toString: String = s"libraryPersistentId=$libraryPersistentId\n" +
     s"date=$date\n" +
     s"applicationVersion=$applicationVersion\n" +
@@ -40,7 +43,10 @@ case class AppleMusicLibrary(playlists: Array[Playlist],
     s"musicFolder=$musicFolder\n" +
     s"tracks=${tracks.size}\n" +
     s"playlists=${playlists.length}"
+}
 
+object AppleMusicLibrary {
+  def builder(): AppleMusicLibraryBuilder = new AppleMusicLibraryBuilder
 }
 
 class AppleMusicLibraryBuilder() {
@@ -70,7 +76,7 @@ class AppleMusicLibraryBuilder() {
     this
   }
 
-  def setDate(value: String) : AppleMusicLibraryBuilder= {
+  def setDate(value: Date) : AppleMusicLibraryBuilder= {
     date = value
     this
   }
@@ -78,7 +84,7 @@ class AppleMusicLibraryBuilder() {
   private var playlists: Array[Playlist] = Array()
   private var musicFolder: String = ""
   private var applicationVersion: String = ""
-  private var date: String = ""
+  private var date: Date = _
   private var libraryPersistentId: String = ""
   private var minorVersion: Int = 0
   private var features: Int = 0
@@ -100,12 +106,12 @@ class AppleMusicLibraryBuilder() {
     majorVersion = value
     this
   }
-  
+
   def setMinorVersion(value: Integer): AppleMusicLibraryBuilder = {
     minorVersion = value
     this
   }
 
-  def build: AppleMusicLibrary =
-    AppleMusicLibrary(playlists, musicFolder, applicationVersion, date, libraryPersistentId, minorVersion, features, majorVersion, tracks)
+  def build(): AppleMusicLibrary =
+    AppleMusicLibrary(libraryPersistentId, playlists, musicFolder, applicationVersion, date, minorVersion, features, majorVersion, tracks)
 }
