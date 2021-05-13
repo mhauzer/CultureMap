@@ -56,7 +56,6 @@ class AppleMusicLibraryBuilder() {
   }
 
   def setLibraryPersistentId(value: String): AppleMusicLibraryBuilder = {
-    println(value)
     libraryPersistentId = value
     this
   }

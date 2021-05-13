@@ -21,6 +21,8 @@ class PListParser(filename: String) {
 
   private def getBoolean(value: Node): Boolean = value.label.toBoolean
 
+  private def getStringData(value: Node): String = value.text
+
   def getTrackField(key: String, value: Node, builder: TrackBuilder): TrackBuilder =
     key match {
       case "Track ID" => builder.setTrackId(getInteger(value))
@@ -110,31 +112,63 @@ class PListParser(filename: String) {
     tracks.reverse
   }
 
-//  def getPlaylistDict(value: Node): Playlist = {
-//    val playlistBuilder = Playlist.builder()
-//
-//    var key = ""
-//    for (n <- value.child) {
-//      n.label match {
-//        case "key" => key = n.text
-//        case _ => getPlaylistField(key, n, playlistBuilder)
-//      }
-//    }
-//
-//    playlistBuilder.build()
-//  }
+  private def getPlaylistItems(node: Node): Array[Int] = {
+    var items: List[Int] = Nil
+    node.label match {
+      case "array" =>
+      case "dict" =>
+      case "key" =>
+      case "integer" => items = getInteger(node) :: items
+      case _ => throw new RuntimeException(s"${node.label} was not expected!")
+    }
+    items.toArray
+  }
 
-  def getPlaylists(value: Node): Array[Playlist] = {
+  private def getPlaylistField(key: String, value: Node, builder: PlaylistBuilder): PlaylistBuilder =
+    key match {
+      case "Playlist Persistent ID" => builder.setPlaylistPersistentId(getString(value))
+      case "Playlist ID" => builder.setPlaylistId(getInteger(value))
+      case "Name" => builder.setName(getString(value))
+      case "Description" => builder.setDescription(getString(value))
+      case "Master" => builder.setMaster(getBoolean(value))
+      case "Visible" => builder.setVisible(getBoolean(value))
+      case "Distinguished Kind" => builder.setDistinguishedKind(getInteger(value))
+      case "Music" => builder.setMusic(getBoolean(value))
+      case "Movies" => builder.setMovies(getBoolean(value))
+      case "TV Shows" => builder.setTvShows(getBoolean(value))
+      case "Podcasts" => builder.setPodcasts(getBoolean(value))
+      case "Audiobooks" => builder.setAudiobooks(getBoolean(value))
+      case "Smart Info" => builder.setSmartInfo(getStringData(value))
+      case "Smart Criteria" => builder.setSmartCriteria(getStringData(value))
+      case "All Items" => builder.setAllItems(getBoolean(value))
+      case "Playlist Items" => builder.setPlaylistItems(getPlaylistItems(value))
+      case _ => throw new RuntimeException(s"$key was not expected!")
+    }
+
+
+  def getPlaylistDict(value: Node): Playlist = {
+    val playlistBuilder = Playlist.builder()
+
+    var key = ""
+    for (n <- value.child) {
+      n.label match {
+        case "key" => key = n.text
+        case _ => getPlaylistField(key, n, playlistBuilder)
+      }
+    }
+
+    playlistBuilder.build()
+  }
+
+  private def getPlaylists(value: Node): Array[Playlist] = {
     var playlists: List[Playlist] = Nil
 
-//    var key: Integer = 0
-//    for (n <- value.child) {
-//      n.label match {
-//        //case "key" => key = getInteger(n)
-//        case "dict" => playlists = getPlaylistDict(n) :: playlists
-//        case _ => throw new RuntimeException(s"<${n.label}> was not expected as <${value.label}>'s child!")
-//      }
-//    }
+    for (n <- value.child) {
+      n.label match {
+        case "dict" => playlists = getPlaylistDict(n) :: playlists
+        case _ => throw new RuntimeException(s"<${n.label}> was not expected as <${value.label}>'s child!")
+      }
+    }
 
     playlists.reverse.toArray
   }
