@@ -30,5 +30,9 @@ ORDER BY
     if (!rs.next)
       List()
     else
-      new Person(getPgValue(rs, "name"), getPgValue(rs, "birth"), getPgValue(rs, "death")) :: getList(rs)
+      new Person(
+        getPgValue(rs, "name"),
+        getPgValue(rs, "birth"),
+        getPgValue(rs, "death")
+      ) :: getList(rs)
 }
