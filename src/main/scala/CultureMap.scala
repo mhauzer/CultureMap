@@ -15,14 +15,18 @@ object CultureMap extends App {
     val filename = args(1)
     println(s"Reading from $filename...")
     val musicLibrary = new PListParser(filename).getMusicLibrary
-//    println(musicLibrary.toString)
-//    println(musicLibrary.playlists.map(_.name) mkString "\n")
+    //    println(musicLibrary.toString)
+    //    println(musicLibrary.playlists.map(_.name) mkString "\n")
 
     val composers = new mutable.HashMap[String, Person]
 
     for (entry <- musicLibrary.tracks.map(_.composer).filter(_ != null)) {
       println(entry)
-      for (rawComposer <- entry.replace("&", ",").replace("/",  ",").split(",")) {
+      for (rawComposer <- entry
+        .replaceAll(" *N/A *", "Not Available")
+        .replace("&", ",")
+        .replace("/", ",")
+        .split(",")) {
         val composer: String = rawComposer.trim()
         if (!composers.keys.exists(_ == composer)) composers(composer) = new Person(name = composer, "", "")
         println("* " + composer)
@@ -48,10 +52,10 @@ object CultureMap extends App {
     header + "\n" +
       "\n" +
       BulletPoint + (
-        (table match {
-            case "person" => personService.getAll
-            case "album" => albumService.getAll
-        }) mkString s"\n$BulletPoint"
+      (table match {
+        case "person" => personService.getAll
+        case "album" => albumService.getAll
+      }) mkString s"\n$BulletPoint"
       )
   }
 }
