@@ -2,12 +2,12 @@ package plist
 
 import common.StringUtils.convertStringToDate
 
-import java.util.{Calendar, Date, GregorianCalendar}
-import scala.math.Ordering
-import scala.xml.Node
+import java.util.Date
+import scala.xml.{Elem, Node, SAXParser}
+import scala.xml.factory.XMLLoader
 
 class PListParser(filename: String) {
-  private val musicLibrary = parse(scala.xml.XML.loadFile(filename))
+  private val musicLibrary = parse(MyXML.loadFile(filename))
 
   def getMusicLibrary: AppleMusicLibrary = musicLibrary
 
@@ -215,9 +215,18 @@ class PListParser(filename: String) {
 
 
   private def parse(xml: Node): AppleMusicLibrary = {
-      xml.label match {
-        case "plist" => getMusicLibraryDict(xml)
-        case _ => throw new RuntimeException(s"<${xml.label}> was not expected at the root level!")
-      }
+    xml.label match {
+      case "plist" => getMusicLibraryDict(xml)
+      case _ => throw new RuntimeException(s"<${xml.label}> was not expected at the root level!")
     }
   }
+}
+
+object MyXML extends XMLLoader[Elem] {
+  override def parser: SAXParser = {
+    val f = javax.xml.parsers.SAXParserFactory.newInstance()
+    f.setNamespaceAware(false)
+    f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false)
+    f.newSAXParser()
+  }
+}

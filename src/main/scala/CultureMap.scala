@@ -1,4 +1,5 @@
 import model.Person
+import nlp.NameParser
 import orm.Db
 import plist.PListParser
 import service.{AlbumService, PersonService}
@@ -8,8 +9,9 @@ import scala.language.postfixOps
 
 object CultureMap extends App {
   private val BulletPoint = "* "
-  val personService = new PersonService()
-  val albumService = new AlbumService()
+  val personService = new PersonService
+  val albumService = new AlbumService
+  val nameParser = new NameParser
 
   if (args(0) == "-import") {
     val filename = args(1)
@@ -22,19 +24,21 @@ object CultureMap extends App {
 
     for (entry <- musicLibrary.tracks.map(_.composer).filter(_ != null)) {
       println(entry)
-      for (rawComposer <- entry
-        .replaceAll(" *N/A *", "Not Available")
-        .replace("&", ",")
-        .replace("/", ",")
-        .split(",")) {
-        val composer: String = rawComposer.trim()
-        if (!composers.keys.exists(_ == composer)) composers(composer) = new Person(name = composer, "", "")
-        println("* " + composer)
+      nameParser.parse(
+        nameParser.names,
+        entry.replaceAll(" *N/A *", "Not Available")
+      ) match {
+        case nameParser.Success(r: List[List[String]], _) => for (rawComposer <- r) {
+          val composer = rawComposer mkString " "
+          if (!composers.keys.exists(_ == composer))
+            composers(composer) = new Person(name = composer, "", "")
+          println("* " + composer)
+        }
+        case nameParser.Failure(msg, n) => println(msg)
+        case nameParser.Error(msg, n) => println(msg)
       }
     }
-
     println(composers.keys.toList.sortWith((a, b) => a < b) mkString "\n")
-
     println("Liczba kompozytorów: " + composers.size)
   } else {
     Db.setUrl(args(0))

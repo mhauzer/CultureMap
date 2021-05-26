@@ -17,10 +17,10 @@ class NameParserSuite extends AnyFunSuite {
   }
 
   test("Richard is a list of words") {
-    assert(parser.parse(parser.listOfWords, "Richard").successful)
+    assert(parser.parse(parser.words, "Richard").successful)
   }
 
   test("Richard Wagner, Richard Strauss is a list of phrases") {
-    assert(parser.parse(parser.listOfPhrases, "Richard Wagner, Richard Strauss").successful)
+    assert(parser.parse(parser.names, "Richard Wagner, Richard Strauss").successful)
   }
 }
