@@ -3,19 +3,24 @@ package nlp
 import scala.util.parsing.combinator.RegexParsers
 
 // https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html
-// TODO: Composed by Luuk Bos pka Lifecycle
+// TODO: Isaac "Zac" Deboni
 class NameParser extends RegexParsers {
   def separator: Parser[Any] = "," | "&" | "/"
 
-  def word: Parser[String] = """[^,&/\s]+""".r
+  def pka: Parser[Any] = "pka" | "PKA"
 
-  def name: Parser[List[String]] = rep(word)
+  def word: Parser[String] = not(pka) ~> """[^,&/()\s]+""".r
 
-  def anotherName: Parser[List[String]] = separator ~ name ^^ { case _ ~ w1 => w1 }
+  def name: Parser[Name] = rep(word) ~ (opt("(" ~> pka ~> rep(word) <~ ")") | opt(pka ~> rep(word))) ^^ {
+    case n1 ~ None => Name(name = n1)
+    case n1 ~ Some(n2) => Name(name = n1, oldNickname = n2)
+  }
 
-  def anotherNames: Parser[List[List[String]]] = rep(anotherName)
+  def anotherName: Parser[Name] = separator ~ name ^^ { case _ ~ w1 => w1 }
 
-  def names: Parser[List[List[String]]] =
+  def anotherNames: Parser[List[Name]] = rep(anotherName)
+
+  def names: Parser[List[Name]] =
     name ~ opt(anotherNames) ^^ {
       case list1 ~ None => list1 :: Nil
       case list1 ~ Some(another) => another match {

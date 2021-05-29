@@ -1,5 +1,5 @@
 import model.Person
-import nlp.NameParser
+import nlp.{Name, NameParser}
 import orm.Db
 import plist.PListParser
 import service.{AlbumService, PersonService}
@@ -36,7 +36,8 @@ object CultureMap extends App {
     "Trad Arr. The High Kings",
     "Trad arr Shaw",
     "Trad. Arr. Bourke",
-    "Trad. arr Pat Clancy"
+    "Trad. arr Pat Clancy",
+    "Square Enix Music"
   )
 
   val personService = new PersonService
@@ -65,16 +66,17 @@ object CultureMap extends App {
         nameParser.names,
         entry.replaceAll(" *N/A *", "Not Available")
       ) match {
-        case nameParser.Success(r: List[List[String]], _) => for (parsedName <- r if parsedName.nonEmpty && !knownErrors.contains(parsedName mkString " ")) {
-          if (longestNameCnt < parsedName.size) {
-            longestNameCnt = parsedName.size; longestName = parsedName mkString " "
+        case nameParser.Success(r: List[Name], _) => for (parsedName <- r if parsedName.nonEmpty && !knownErrors.contains(parsedName.name mkString " ")) {
+          if (longestNameCnt < parsedName.toString.length) {
+            longestNameCnt = parsedName.toString.length; longestName = parsedName.toString
           }
-          parsedName.size match {
-            case 1 => probablePseudonyms += parsedName.head
-            case 2 => firstNames += parsedName.head; lastNames += parsedName.tail.head
-            case _ => longNames += parsedName mkString " "
+          parsedName.name.size match {
+            case 1 => probablePseudonyms += parsedName.name.head
+            case 2 => firstNames += parsedName.name.head; lastNames += parsedName.name.tail.head
+            case _ => longNames += parsedName.toString
           }
-          val fullName = parsedName mkString " "
+          probablePseudonyms += parsedName.oldNickname mkString " "
+          val fullName = parsedName.name mkString " "
           if (!composers.keys.exists(_ == fullName))
             composers(fullName) = new Person(name = fullName, "", "")
           println(s"* [$fullName]")
